@@ -1,7 +1,6 @@
 package web.dao;
 
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 import web.model.User;
 
 import javax.persistence.EntityManager;
@@ -10,35 +9,48 @@ import java.util.List;
 
 @Repository
 public class UserDaoImpl implements UserDao {
+
     @PersistenceContext
     private EntityManager entityManager;
 
+
     @Override
-    public void addUser(User user) {
+    public void saveUser(User user) {
         entityManager.persist(user);
     }
 
     @Override
-    public List<User> getUsers() {
-        return entityManager.createQuery("SELECT u FROM User u", User.class).getResultList();
-    }
-
-    @Override
-    public User getUserId(long id) {
+    public User getUserById(Long id) {
         return entityManager.find(User.class, id);
     }
 
     @Override
     public void updateUser(User user) {
-        User userUpdate = entityManager.find(User.class, user.getId());
-        userUpdate.setName(user.getName());
-        userUpdate.setLastName(user.getLastName());
-        userUpdate.setLogin(user.getLogin());
+        entityManager.merge(user);
     }
 
     @Override
-    public void deleteUser(long id) {
-        User userDelete = entityManager.find(User.class, id);
-        entityManager.remove(userDelete);
+    public void deleteUser(Long id) {
+        try {
+            User user = entityManager.find(User.class, id);
+            if (user != null) {
+                entityManager.remove(user);
+            }
+        } catch (NullPointerException e) {
+            System.out.println("User данным id не существует!");
+        }
+    }
+
+    @Override
+    public List<User> getAllUsers() {
+        return entityManager.createQuery("select u from User u", User.class)
+                .getResultList();
+    }
+
+    @Override
+    public User getUserByName(String username) {
+        return entityManager.createQuery("select u from User u where u.username = :username", User.class)
+                .setParameter("username", username)
+                .getSingleResult();
     }
 }
