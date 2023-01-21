@@ -37,7 +37,7 @@ public class UserDaoImpl implements UserDao {
                 entityManager.remove(user);
             }
         } catch (NullPointerException e) {
-            System.out.println("User данным id не существует!");
+            System.out.println("User с указанным вами id не существует!");
         }
     }
 
